@@ -14,6 +14,7 @@ from .simplify import simplify
 from .to_allen import to_allen
 from .to_aseg import to_aseg
 from .to_supersynth import to_supersynth
+from .to_laura import to_laura
 
 # ----------------------------------------------------------------------
 #   Main parser
@@ -387,6 +388,47 @@ parser_supersynth.set_defaults(func=_to_supersynth)
 
 
 # ----------------------------------------------------------------------
+#   Convert to Laura's labels
+# ----------------------------------------------------------------------
+
+def _to_laura(args: Namespace) -> None:
+    if len(args.output) == 0:
+        args.output = [True] * len(args.input)
+    elif len(args.output) == 1:
+        args.output *= len(args.input)
+    elif len(args.output) != len(args.input):
+        raise ValueError("Number of input and output files do not match.")
+
+    if len(args.side) == 0:
+        args.side = ["R"] * len(args.input)
+    elif len(args.side) == 1:
+        args.side *= len(args.input)
+    elif len(args.side) != len(args.input):
+        raise ValueError("Number of input files and sides do not match.")
+
+    for inp, side, out in zip(args.input, args.side, args.output):
+        to_laura(inp, side, out)
+
+
+parser_laura = subparsers.add_parser(
+    "laura",
+    help="Convert NextBrain labels to Laura's labels.",
+)
+parser_laura.add_argument(
+    "-i", "--input", nargs="+", help="Input segmentation(s)."
+)
+parser_laura.add_argument(
+    "-o", "--output", nargs="+", default=[],
+    help="Output filename(s) of the segmentation(s)."
+)
+parser_laura.add_argument(
+    "-s", "--side", nargs="+", default=["right"],
+    help="Side of the hemisphere (left or right), or path to side label map."
+)
+parser_laura.set_defaults(func=_to_laura)
+
+
+# ----------------------------------------------------------------------
 #   Simplify label map
 # ----------------------------------------------------------------------
 
@@ -448,6 +490,7 @@ ASEG_LUT = op.join(LUTDIR, "ASegLUT.txt")
 SUPERSYNTH_LUT = op.join(LUTDIR, "SuperSynthWholeLUT.txt")
 SUPERSYNTH_CEREBRUM_LUT = op.join(LUTDIR, "SuperSynthCerebrumLUT.txt")
 SUPERSYNTH_EXVIVO_LUT = op.join(LUTDIR, "SuperSynthExVivoLUT.txt")
+LAURA_LUT = op.join(LUTDIR, "LauraLUT.txt")
 
 
 def _allen_lut(args: Namespace) -> None:
@@ -477,6 +520,9 @@ def _allen_lut(args: Namespace) -> None:
     elif args.lut == "supersynth-exvivo":
         args.output = args.output or "SuperSynthExVivoLUT.txt"
         shutil.copyfile(SUPERSYNTH_EXVIVO_LUT, args.output)
+    elif args.lut == "laura":
+        args.output = args.output or "LauraLUT.txt"
+        shutil.copyfile(LAURA_LUT, args.output)
     else:
         raise ValueError(args.lut)
 
@@ -494,6 +540,7 @@ parser_lut.add_argument(
     choices=(
         "allen", "allen+dk", "nextbrain", "aseg", "freesurfer",
         "supersynth", "supersynth-cerebrum", "supersynth-exvivo",
+        "laura",
     ),
     default="allen+dk",
     help=(
@@ -502,10 +549,10 @@ parser_lut.add_argument(
         "allen+dk = Allen + append Desikan-Killiany cortical labels, "
         "nextbrain = NextBrain, "
         "aseg = ASeg+AParc/SynthSeg, "
-        "supersynth = SuperSynth."
-        "supersynth-cerebrum = SuperSynth (cerebrum mode)."
-        "supersynth-exvivo = SuperSynth (exvivo mode)."
-        "freesurfer = Complete FreeSurfer colormap, "
+        "supersynth = SuperSynth, "
+        "supersynth-cerebrum = SuperSynth (cerebrum mode), "
+        "supersynth-exvivo = SuperSynth (exvivo mode), "
+        "freesurfer = Complete FreeSurfer colormap."
     )
 )
 parser_lut.add_argument(
