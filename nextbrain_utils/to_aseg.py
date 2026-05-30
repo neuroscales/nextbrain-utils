@@ -53,8 +53,8 @@ def to_aseg(
 
     Returns
     -------
-    allen: SpatialImage
-        Allen segmentation.
+    aseg: nb.SpatialImage
+        ASeg+AParc segmentation.
     """
     # load/preprocess data
     if isinstance(nextbrain, (str, Path)):

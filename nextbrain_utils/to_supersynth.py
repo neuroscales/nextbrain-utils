@@ -37,7 +37,7 @@ def to_supersynth(
     save: PathLike | bool = False
 ) -> SpatialImage | np.ndarray:
     """
-    Convert NextBrain labels to ASeg+AParc labels.
+    Convert NextBrain labels to SuperSynth labels.
 
     Parameters
     ----------
@@ -50,8 +50,8 @@ def to_supersynth(
 
     Returns
     -------
-    allen: SpatialImage
-        Allen segmentation.
+    supersynth: nb.SpatialImage
+        SuperSynth segmentation.
     """
     # load/preprocess data
     if isinstance(nextbrain, (str, Path)):
@@ -108,7 +108,7 @@ def to_supersynth(
             dirname = op.curdir
             basename = "seg"
             ext = ".nii.gz"
-        basename += ".aseg+aparc"
+        basename += ".supersynth+aparc"
 
         if save is True:
             save = f"{dirname}/{basename}{ext}"
